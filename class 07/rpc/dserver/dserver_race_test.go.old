@@ -1,0 +1,79 @@
+// Testing code for concurrent buffer.
+// This test generates long sequence of insertions, removals, and flushes
+// in attempt to hit race condition
+
+package dserver
+
+import (
+	"testing"
+	"fmt"
+	"runtime"
+	"time"
+        )
+
+
+// How many repetitions
+var nrun int = 5
+// How many elements inserted per test
+var ninsert int = 1000
+// How many elements removed
+var nremove int = 1000
+// How many flushes 
+var nflush int = 1000
+
+// Global variable to determine when removes completed
+var rdone bool = false
+
+
+// Concurrent testing
+
+func rinsert(bp *Buf, dchan chan int, t *testing.T) {
+	for inserted := 1; inserted <= ninsert; inserted++ {
+		bp.Insert(inserted)
+	}
+	dchan <- 1
+}
+
+func rremove(bp *Buf, dchan chan int, t *testing.T) {
+	for removed := 1; removed <= nremove; removed++ {
+		bp.Remove()
+	}
+	rdone = true
+	dchan <- 1
+}
+
+func rflush(bp *Buf, dchan chan int, t *testing.T) {
+	for flushed := 1; flushed <= nflush; flushed++ {
+		bp.Flush()
+	}
+	dchan <- 1
+}
+
+
+func TestRace(t *testing.T) {
+	runtime.GOMAXPROCS(4)
+	dchan := make(chan int, 2)
+	rchan := make(chan int, 1)
+	// Run same test nrun times
+	for i := 0; i < nrun; i++ {
+		bp := NewBuf()
+		rdone = false
+		go rinsert(bp, dchan, t)
+		go rflush(bp, dchan, t)
+		go rremove(bp, rchan, t)
+		for j := 0; j < 2; j++ {
+			<- dchan
+		}
+		// Let things run a while
+		time.Sleep(3 * 1e9)
+		var xinsert int
+		for xinsert = 1; !rdone; xinsert++ {
+			bp.Insert(0)
+		}
+		<- rchan
+		fmt.Printf("Completed %d insertions, %d flushes, %d removals, %d extra insertions\n",
+			ninsert, nflush, nremove, xinsert)
+	}
+	runtime.GOMAXPROCS(1)
+}
+

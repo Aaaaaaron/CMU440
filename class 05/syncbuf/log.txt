@@ -1,0 +1,4 @@
+(in lbuf) building pkg "lbuf"
+(in lbuf) testing "lbuf"
+Completed 10000 insertions, 0 flushes, 1000 removals, 1000 extra insertions
+Completed 10000 insertions, 0 flushes, 1000 removals, 1000 extra insertions

@@ -1,0 +1,85 @@
+// Unbounded, synchronous buffer based on mutexes and condition variables
+
+package cvbuf
+
+import (
+	"sync"
+)
+
+// Linked list element
+type BufEle struct {
+	val interface{}
+	next *BufEle
+}
+
+type Buf struct {
+	head *BufEle               // Oldest element
+	tail *BufEle               // Most recently inserted element
+	mutex *sync.Mutex          // Lock to guarantee mutual exclusion
+	cvar *sync.Cond            // Allows blocking when reading
+}
+
+func NewBuf() *Buf {
+	bp := new(Buf)
+	bp.mutex = new(sync.Mutex)
+	bp.cvar = sync.NewCond(bp.mutex)
+	return bp
+}
+
+func (bp *Buf) lock() {
+	bp.mutex.Lock()
+}
+
+func (bp *Buf) unlock() {
+	bp.mutex.Unlock()
+}
+
+
+func (bp *Buf) Insert(val interface{}) {
+	ele := new(BufEle)
+	ele.val = val
+	bp.lock()
+	if bp.head == nil {
+		// Inserting into empty list
+		bp.head = ele
+		bp.tail = ele
+		bp.cvar.Signal()
+	} else {
+		bp.tail.next = ele
+		bp.tail = ele
+	}
+	bp.unlock()
+}
+
+func (bp *Buf) Front() interface{} {
+	bp.lock()
+	for bp.head == nil { bp.cvar.Wait() }
+	v := bp.head.val
+	bp.unlock()
+	return v
+}
+
+func (bp *Buf) Remove() interface{} {
+	bp.lock()
+	for bp.head == nil { bp.cvar.Wait() }
+	e := bp.head
+	bp.head = e.next
+	if e == bp.tail { bp.tail = nil }
+	v := e.val
+	bp.unlock()
+	return v
+}
+
+func (bp *Buf) Empty() bool {
+	bp.lock()
+	rval := bp.head == nil
+	bp.unlock()
+	return rval
+}
+
+func (bp *Buf) Flush() {
+	bp.lock()
+	bp.head = nil
+	bp.tail = nil
+	bp.unlock()
+}

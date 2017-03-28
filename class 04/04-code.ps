@@ -1,0 +1,1612 @@
+%!PS-Adobe-3.0
+%%BoundingBox: 38 24 574 768
+%%Title: Enscript Output
+%%For: Randal E Bryant
+%%Creator: GNU enscript 1.6.4
+%%CreationDate: Wed Sep  5 17:40:05 2012
+%%Orientation: Portrait
+%%Pages: (atend)
+%%DocumentMedia: Letter 612 792 0 () ()
+%%DocumentNeededResources: (atend)
+%%EndComments
+%%BeginProlog
+%%BeginResource: procset Enscript-Prolog 1.6 4
+%
+% Procedures.
+%
+
+/_S {	% save current state
+  /_s save def
+} def
+/_R {	% restore from saved state
+  _s restore
+} def
+
+/S {	% showpage protecting gstate
+  gsave
+  showpage
+  grestore
+} bind def
+
+/MF {	% fontname newfontname -> -	make a new encoded font
+  /newfontname exch def
+  /fontname exch def
+
+  /fontdict fontname findfont def
+  /newfont fontdict maxlength dict def
+
+  fontdict {
+    exch
+    dup /FID eq {
+      % skip FID pair
+      pop pop
+    } {
+      % copy to the new font dictionary
+      exch newfont 3 1 roll put
+    } ifelse
+  } forall
+
+  newfont /FontName newfontname put
+
+  % insert only valid encoding vectors
+  encoding_vector length 256 eq {
+    newfont /Encoding encoding_vector put
+  } if
+
+  newfontname newfont definefont pop
+} def
+
+/MF_PS { % fontname newfontname -> -	make a new font preserving its enc
+  /newfontname exch def
+  /fontname exch def
+
+  /fontdict fontname findfont def
+  /newfont fontdict maxlength dict def
+
+  fontdict {
+    exch
+    dup /FID eq {
+      % skip FID pair
+      pop pop
+    } {
+      % copy to the new font dictionary
+      exch newfont 3 1 roll put
+    } ifelse
+  } forall
+
+  newfont /FontName newfontname put
+
+  newfontname newfont definefont pop
+} def
+
+/SF { % fontname width height -> -	set a new font
+  /height exch def
+  /width exch def
+
+  findfont
+  [width 0 0 height 0 0] makefont setfont
+} def
+
+/SUF { % fontname width height -> -	set a new user font
+  /height exch def
+  /width exch def
+
+  /F-gs-user-font MF
+  /F-gs-user-font width height SF
+} def
+
+/SUF_PS { % fontname width height -> -	set a new user font preserving its enc
+  /height exch def
+  /width exch def
+
+  /F-gs-user-font MF_PS
+  /F-gs-user-font width height SF
+} def
+
+/M {moveto} bind def
+/s {show} bind def
+
+/Box {	% x y w h -> -			define box path
+  /d_h exch def /d_w exch def /d_y exch def /d_x exch def
+  d_x d_y  moveto
+  d_w 0 rlineto
+  0 d_h rlineto
+  d_w neg 0 rlineto
+  closepath
+} def
+
+/bgs {	% x y height blskip gray str -> -	show string with bg color
+  /str exch def
+  /gray exch def
+  /blskip exch def
+  /height exch def
+  /y exch def
+  /x exch def
+
+  gsave
+    x y blskip sub str stringwidth pop height Box
+    gray setgray
+    fill
+  grestore
+  x y M str s
+} def
+
+/bgcs { % x y height blskip red green blue str -> -  show string with bg color
+  /str exch def
+  /blue exch def
+  /green exch def
+  /red exch def
+  /blskip exch def
+  /height exch def
+  /y exch def
+  /x exch def
+
+  gsave
+    x y blskip sub str stringwidth pop height Box
+    red green blue setrgbcolor
+    fill
+  grestore
+  x y M str s
+} def
+
+% Highlight bars.
+/highlight_bars {	% nlines lineheight output_y_margin gray -> -
+  gsave
+    setgray
+    /ymarg exch def
+    /lineheight exch def
+    /nlines exch def
+
+    % This 2 is just a magic number to sync highlight lines to text.
+    0 d_header_y ymarg sub 2 sub translate
+
+    /cw d_output_w cols div def
+    /nrows d_output_h ymarg 2 mul sub lineheight div cvi def
+
+    % for each column
+    0 1 cols 1 sub {
+      cw mul /xp exch def
+
+      % for each rows
+      0 1 nrows 1 sub {
+        /rn exch def
+        rn lineheight mul neg /yp exch def
+        rn nlines idiv 2 mod 0 eq {
+	  % Draw highlight bar.  4 is just a magic indentation.
+	  xp 4 add yp cw 8 sub lineheight neg Box fill
+	} if
+      } for
+    } for
+
+  grestore
+} def
+
+% Line highlight bar.
+/line_highlight {	% x y width height gray -> -
+  gsave
+    /gray exch def
+    Box gray setgray fill
+  grestore
+} def
+
+% Column separator lines.
+/column_lines {
+  gsave
+    .1 setlinewidth
+    0 d_footer_h translate
+    /cw d_output_w cols div def
+    1 1 cols 1 sub {
+      cw mul 0 moveto
+      0 d_output_h rlineto stroke
+    } for
+  grestore
+} def
+
+% Column borders.
+/column_borders {
+  gsave
+    .1 setlinewidth
+    0 d_footer_h moveto
+    0 d_output_h rlineto
+    d_output_w 0 rlineto
+    0 d_output_h neg rlineto
+    closepath stroke
+  grestore
+} def
+
+% Do the actual underlay drawing
+/draw_underlay {
+  ul_style 0 eq {
+    ul_str true charpath stroke
+  } {
+    ul_str show
+  } ifelse
+} def
+
+% Underlay
+/underlay {	% - -> -
+  gsave
+    0 d_page_h translate
+    d_page_h neg d_page_w atan rotate
+
+    ul_gray setgray
+    ul_font setfont
+    /dw d_page_h dup mul d_page_w dup mul add sqrt def
+    ul_str stringwidth pop dw exch sub 2 div ul_h_ptsize -2 div moveto
+    draw_underlay
+  grestore
+} def
+
+/user_underlay {	% - -> -
+  gsave
+    ul_x ul_y translate
+    ul_angle rotate
+    ul_gray setgray
+    ul_font setfont
+    0 0 ul_h_ptsize 2 div sub moveto
+    draw_underlay
+  grestore
+} def
+
+% Page prefeed
+/page_prefeed {		% bool -> -
+  statusdict /prefeed known {
+    statusdict exch /prefeed exch put
+  } {
+    pop
+  } ifelse
+} def
+
+% Wrapped line markers
+/wrapped_line_mark {	% x y charwith charheight type -> -
+  /type exch def
+  /h exch def
+  /w exch def
+  /y exch def
+  /x exch def
+
+  type 2 eq {
+    % Black boxes (like TeX does)
+    gsave
+      0 setlinewidth
+      x w 4 div add y M
+      0 h rlineto w 2 div 0 rlineto 0 h neg rlineto
+      closepath fill
+    grestore
+  } {
+    type 3 eq {
+      % Small arrows
+      gsave
+        .2 setlinewidth
+        x w 2 div add y h 2 div add M
+        w 4 div 0 rlineto
+        x w 4 div add y lineto stroke
+
+        x w 4 div add w 8 div add y h 4 div add M
+        x w 4 div add y lineto
+	w 4 div h 8 div rlineto stroke
+      grestore
+    } {
+      % do nothing
+    } ifelse
+  } ifelse
+} def
+
+% EPSF import.
+
+/BeginEPSF {
+  /b4_Inc_state save def    		% Save state for cleanup
+  /dict_count countdictstack def	% Count objects on dict stack
+  /op_count count 1 sub def		% Count objects on operand stack
+  userdict begin
+  /showpage { } def
+  0 setgray 0 setlinecap
+  1 setlinewidth 0 setlinejoin
+  10 setmiterlimit [ ] 0 setdash newpath
+  /languagelevel where {
+    pop languagelevel
+    1 ne {
+      false setstrokeadjust false setoverprint
+    } if
+  } if
+} bind def
+
+/EndEPSF {
+  count op_count sub { pos } repeat	% Clean up stacks
+  countdictstack dict_count sub { end } repeat
+  b4_Inc_state restore
+} bind def
+
+% Check PostScript language level.
+/languagelevel where {
+  pop /gs_languagelevel languagelevel def
+} {
+  /gs_languagelevel 1 def
+} ifelse
+%%EndResource
+%%BeginResource: procset Enscript-Encoding-88591 1.6 4
+/encoding_vector [
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/space        	/exclam       	/quotedbl     	/numbersign   	
+/dollar       	/percent      	/ampersand    	/quoteright   	
+/parenleft    	/parenright   	/asterisk     	/plus         	
+/comma        	/hyphen       	/period       	/slash        	
+/zero         	/one          	/two          	/three        	
+/four         	/five         	/six          	/seven        	
+/eight        	/nine         	/colon        	/semicolon    	
+/less         	/equal        	/greater      	/question     	
+/at           	/A            	/B            	/C            	
+/D            	/E            	/F            	/G            	
+/H            	/I            	/J            	/K            	
+/L            	/M            	/N            	/O            	
+/P            	/Q            	/R            	/S            	
+/T            	/U            	/V            	/W            	
+/X            	/Y            	/Z            	/bracketleft  	
+/backslash    	/bracketright 	/asciicircum  	/underscore   	
+/quoteleft    	/a            	/b            	/c            	
+/d            	/e            	/f            	/g            	
+/h            	/i            	/j            	/k            	
+/l            	/m            	/n            	/o            	
+/p            	/q            	/r            	/s            	
+/t            	/u            	/v            	/w            	
+/x            	/y            	/z            	/braceleft    	
+/bar          	/braceright   	/tilde        	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/space        	/exclamdown   	/cent         	/sterling     	
+/currency     	/yen          	/brokenbar    	/section      	
+/dieresis     	/copyright    	/ordfeminine  	/guillemotleft	
+/logicalnot   	/hyphen       	/registered   	/macron       	
+/degree       	/plusminus    	/twosuperior  	/threesuperior	
+/acute        	/mu           	/paragraph    	/bullet       	
+/cedilla      	/onesuperior  	/ordmasculine 	/guillemotright	
+/onequarter   	/onehalf      	/threequarters	/questiondown 	
+/Agrave       	/Aacute       	/Acircumflex  	/Atilde       	
+/Adieresis    	/Aring        	/AE           	/Ccedilla     	
+/Egrave       	/Eacute       	/Ecircumflex  	/Edieresis    	
+/Igrave       	/Iacute       	/Icircumflex  	/Idieresis    	
+/Eth          	/Ntilde       	/Ograve       	/Oacute       	
+/Ocircumflex  	/Otilde       	/Odieresis    	/multiply     	
+/Oslash       	/Ugrave       	/Uacute       	/Ucircumflex  	
+/Udieresis    	/Yacute       	/Thorn        	/germandbls   	
+/agrave       	/aacute       	/acircumflex  	/atilde       	
+/adieresis    	/aring        	/ae           	/ccedilla     	
+/egrave       	/eacute       	/ecircumflex  	/edieresis    	
+/igrave       	/iacute       	/icircumflex  	/idieresis    	
+/eth          	/ntilde       	/ograve       	/oacute       	
+/ocircumflex  	/otilde       	/odieresis    	/divide       	
+/oslash       	/ugrave       	/uacute       	/ucircumflex  	
+/udieresis    	/yacute       	/thorn        	/ydieresis    	
+] def
+%%EndResource
+%%EndProlog
+%%BeginSetup
+%%IncludeResource: font Courier-Bold
+%%IncludeResource: font Courier
+/HFpt_w 10 def
+/HFpt_h 10 def
+/Courier-Bold /HF-gs-font MF
+/HF /HF-gs-font findfont [HFpt_w 0 0 HFpt_h 0 0] makefont def
+/Courier /F-gs-font MF
+/F-gs-font 10 10 SF
+/#copies 1 def
+% Pagedevice definitions:
+gs_languagelevel 1 gt {
+  <<
+    /PageSize [612 792] 
+  >> setpagedevice
+} if
+%%BeginResource: procset Enscript-Header-simple 1.6 4
+
+/do_header {	% print default simple header
+  gsave
+    d_header_x d_header_y HFpt_h 3 div add translate
+
+    HF setfont
+    user_header_p {
+      5 0 moveto user_header_left_str show
+
+      d_header_w user_header_center_str stringwidth pop sub 2 div
+      0 moveto user_header_center_str show
+
+      d_header_w user_header_right_str stringwidth pop sub 5 sub
+      0 moveto user_header_right_str show
+    } {
+      fname length fmodstr length add pagenumstr length add 95 6 idiv add d_header_w 6 idiv le{
+        5 0 moveto fname show
+        45 0 rmoveto fmodstr show
+        45 0 rmoveto pagenumstr show
+      } {
+        5 0 moveto fmodstr show
+        45 0 rmoveto pagenumstr show
+        fname length d_header_w 6 idiv idiv 1 add 10 mul 5 exch moveto
+        1 1 fname length d_header_w 6 idiv idiv
+        {
+          dup fname exch 1 sub d_header_w 6 idiv mul d_header_w 6 idiv getinterval show
+          5 exch 10 mul fname length d_header_w 6 idiv idiv 1 add 10 mul exch sub moveto
+        } for
+        5 10 moveto
+        fname fname length d_header_w 6 idiv idiv d_header_w 6 idiv mul dup fname length exch sub getinterval show
+      }ifelse
+    }ifelse
+
+  grestore
+} def
+%%EndResource
+/d_page_w 536 def
+/d_page_h 744 def
+/d_header_x 0 def
+/d_header_y 700 def
+/d_header_w 536 def
+/d_header_h 44 def
+/d_footer_x 0 def
+/d_footer_y 0 def
+/d_footer_w 536 def
+/d_footer_h 0 def
+/d_output_w 536 def
+/d_output_h 700 def
+/cols 1 def
+%%EndSetup
+%%Page: (1) 1
+%%BeginPageSetup
+_S
+38 24 translate
+/pagenum 1 def
+/fname (bufb/bufb.go) def
+/fdir (bufb/) def
+/ftail (bufb.go) def
+% User defined strings:
+/fmodstr (Wed Sep 05 14:45:42 2012) def
+/pagenumstr (1) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+5 687 M
+(// Unbounded buffer, where underlying values are byte arrays) s
+5 665 M
+(package bufb) s
+5 643 M
+(import \() s
+5 632 M
+(        "errors") s
+5 621 M
+(\)) s
+5 599 M
+(// Linked list element) s
+5 588 M
+(type BufEle struct {) s
+5 577 M
+(        val []byte) s
+5 566 M
+(        next *BufEle) s
+5 555 M
+(}) s
+5 533 M
+(type Buf struct {) s
+5 522 M
+(        head *BufEle         // Oldest element) s
+5 511 M
+(        tail *BufEle         // Most recently inserted element) s
+5 500 M
+(}) s
+5 478 M
+(func NewBuf\(\) *Buf {) s
+5 467 M
+(        return new\(Buf\)) s
+5 456 M
+(}) s
+5 434 M
+(func \(bp *Buf\) Insert\(val []byte\) {) s
+5 423 M
+(        ele := &BufEle{val : val}) s
+5 412 M
+(        if bp.head == nil {) s
+5 401 M
+(                // Inserting into empty list) s
+5 390 M
+(                bp.head = ele) s
+5 379 M
+(                bp.tail = ele) s
+5 368 M
+(        } else {) s
+5 357 M
+(                bp.tail.next = ele) s
+5 346 M
+(                bp.tail = ele) s
+5 335 M
+(        }) s
+5 324 M
+(}) s
+5 302 M
+(func \(bp *Buf\) Front\(\) []byte {) s
+5 291 M
+(        if bp.head == nil { return nil }) s
+5 280 M
+(        return bp.head.val) s
+5 269 M
+(}) s
+5 247 M
+(func \(bp *Buf\) Remove\(\) \([]byte, error\) {) s
+5 236 M
+(        e := bp.head) s
+5 225 M
+(        if e == nil {) s
+5 214 M
+(                err := errors.New\("Empty Buffer"\)) s
+5 203 M
+(                return nil, err) s
+5 192 M
+(        }) s
+5 181 M
+(        bp.head = e.next) s
+5 170 M
+(        // List becoming empty ) s
+5 159 M
+(        if e == bp.tail { bp.tail = nil }) s
+5 148 M
+(        return e.val, nil) s
+5 137 M
+(}) s
+5 115 M
+(func \(bp *Buf\) Empty\(\) bool {) s
+5 104 M
+(        return bp.head == nil) s
+5 93 M
+(}) s
+5 71 M
+(func \(bp *Buf\) Flush\(\) {) s
+5 60 M
+(        bp.head = nil) s
+5 49 M
+(        bp.tail = nil) s
+5 38 M
+(}) s
+_R
+S
+%%Page: (1) 2
+%%BeginPageSetup
+_S
+38 24 translate
+/pagenum 1 def
+/fname (bufb/bufb_test.go) def
+/fdir (bufb/) def
+/ftail (bufb_test.go) def
+% User defined strings:
+/fmodstr (Wed Sep 05 14:50:42 2012) def
+/pagenumstr (1) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+5 687 M
+(// Testing code for buffer) s
+5 665 M
+(package bufb) s
+5 643 M
+(import \() s
+5 632 M
+(        "encoding/json") s
+5 621 M
+(        "math/rand") s
+5 610 M
+(        "testing") s
+5 599 M
+(\)) s
+5 577 M
+(// Convert integer to byte array) s
+5 566 M
+(func i2b\(i int\) []byte {) s
+5 555 M
+(        b, _ := json.Marshal\(i\)) s
+5 544 M
+(        return b) s
+5 533 M
+(}) s
+5 511 M
+(// Convert byte array back to integer) s
+5 500 M
+(func b2i\(b []byte\) int {) s
+5 489 M
+(        var i int) s
+5 478 M
+(        json.Unmarshal\(b, &i\)) s
+5 467 M
+(        return i) s
+5 456 M
+(}) s
+5 434 M
+(// How many repetitions) s
+5 423 M
+(var ntest int = 10) s
+5 401 M
+(// How many elements per test) s
+5 390 M
+(var nele int = 50) s
+5 368 M
+(func TestBuf\(t *testing.T\) {) s
+5 357 M
+(        // Run same test ntest times) s
+5 346 M
+(        for i := 0; i < ntest; i++ {) s
+5 335 M
+(                bp := NewBuf\(\)) s
+5 324 M
+(                runtest\(t, bp\)) s
+5 313 M
+(                if !bp.Empty\(\) {) s
+5 302 M
+(                        t.Logf\("Expected empty buffer"\)) s
+5 291 M
+(                        t.Fail\(\)) s
+5 280 M
+(                }) s
+5 269 M
+(        }) s
+5 258 M
+(}) s
+5 236 M
+(func runtest\(t *testing.T, bp *Buf\) {) s
+5 225 M
+(        inserted := 0) s
+5 214 M
+(        removed := 0) s
+5 203 M
+(        emptycount := 0) s
+5 192 M
+(        for removed < nele {) s
+5 181 M
+(                if bp.Empty\(\) {) s
+5 170 M
+(                        emptycount++) s
+5 159 M
+(                }) s
+5 148 M
+(                // Choose action: insert or remove) s
+5 137 M
+(                insert := !\(inserted == nele\)) s
+5 126 M
+(                if inserted > removed && rand.Int31n\(2\) == 0 {) s
+5 115 M
+(                        insert = false) s
+5 104 M
+(                }) s
+5 93 M
+(                if insert {) s
+5 82 M
+(                        bp.Insert\(i2b\(inserted\)\)) s
+5 71 M
+(                        inserted++) s
+5 60 M
+(                } else {) s
+5 49 M
+(                        b, err := bp.Remove\(\)) s
+5 38 M
+(                        if err != nil {) s
+5 27 M
+(                                t.Logf\("Attempt to remove from empty buffer\\n"\)) s
+5 16 M
+(                                t.Fail\(\)) s
+5 5 M
+(                        }) s
+_R
+S
+%%Page: (2) 3
+%%BeginPageSetup
+_S
+38 24 translate
+/pagenum 2 def
+/fname (bufb/bufb_test.go) def
+/fdir (bufb/) def
+/ftail (bufb_test.go) def
+% User defined strings:
+/fmodstr (Wed Sep 05 14:50:42 2012) def
+/pagenumstr (2) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+5 687 M
+(                        v := b2i\(b\)) s
+5 676 M
+(                        if v != removed {) s
+5 665 M
+(                                t.Logf\("Removed %d.  Expected %d\\n", v, removed\)) s
+5 654 M
+(                                t.Fail\(\)) s
+5 643 M
+(                        }) s
+5 632 M
+(                        removed++) s
+5 621 M
+(                }) s
+5 610 M
+(        }) s
+5 599 M
+(}) s
+_R
+S
+%%Page: (1) 4
+%%BeginPageSetup
+_S
+38 24 translate
+/pagenum 1 def
+/fname (bufi/bufi.go) def
+/fdir (bufi/) def
+/ftail (bufi.go) def
+% User defined strings:
+/fmodstr (Wed Sep 05 14:54:18 2012) def
+/pagenumstr (1) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+5 687 M
+(// Unbounded buffer, where underlying values are arbitrary values) s
+5 665 M
+(package bufi) s
+5 643 M
+(import \() s
+5 632 M
+(        "errors") s
+5 621 M
+(\)) s
+5 599 M
+(// Linked list element) s
+5 588 M
+(type BufEle struct {) s
+5 577 M
+(        val interface{}) s
+5 566 M
+(        next *BufEle) s
+5 555 M
+(}) s
+5 533 M
+(type Buf struct {) s
+5 522 M
+(        head *BufEle         // Oldest element) s
+5 511 M
+(        tail *BufEle         // Most recently inserted element) s
+5 500 M
+(}) s
+5 478 M
+(func NewBuf\(\) *Buf {) s
+5 467 M
+(        return new\(Buf\)) s
+5 456 M
+(}) s
+5 434 M
+(func \(bp *Buf\) Insert\(val interface{}\) {) s
+5 423 M
+(        ele := &BufEle{val : val}) s
+5 412 M
+(        if bp.head == nil {) s
+5 401 M
+(                // Inserting into empty list) s
+5 390 M
+(                bp.head = ele) s
+5 379 M
+(        } else {) s
+5 368 M
+(                bp.tail.next = ele) s
+5 357 M
+(        }) s
+5 346 M
+(        bp.tail = ele) s
+5 335 M
+(}) s
+5 313 M
+(func \(bp *Buf\) Front\(\) interface{} {) s
+5 302 M
+(        if bp.head == nil { return nil }) s
+5 291 M
+(        return bp.head.val) s
+5 280 M
+(}) s
+5 258 M
+(func \(bp *Buf\) Remove\(\) \(interface{}, error\) {) s
+5 247 M
+(        e := bp.head) s
+5 236 M
+(        if e == nil {) s
+5 225 M
+(                err := errors.New\("Empty Buffer"\)) s
+5 214 M
+(                return nil, err) s
+5 203 M
+(        }) s
+5 192 M
+(        bp.head = e.next) s
+5 181 M
+(        // List becoming empty ) s
+5 170 M
+(        if e == bp.tail { bp.tail = nil }) s
+5 159 M
+(        return e.val, nil) s
+5 148 M
+(}) s
+5 126 M
+(func \(bp *Buf\) Empty\(\) bool {) s
+5 115 M
+(        return bp.head == nil) s
+5 104 M
+(}) s
+5 82 M
+(func \(bp *Buf\) Flush\(\) {) s
+5 71 M
+(        bp.head = nil) s
+5 60 M
+(        bp.tail = nil) s
+5 49 M
+(}) s
+_R
+S
+%%Page: (1) 5
+%%BeginPageSetup
+_S
+38 24 translate
+/pagenum 1 def
+/fname (bufi/bufi_test.go) def
+/fdir (bufi/) def
+/ftail (bufi_test.go) def
+% User defined strings:
+/fmodstr (Wed Sep 05 14:55:15 2012) def
+/pagenumstr (1) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+5 687 M
+(// Testing code for buffer) s
+5 665 M
+(package bufi) s
+5 643 M
+(import \() s
+5 632 M
+(        "encoding/json") s
+5 621 M
+(        "fmt") s
+5 610 M
+(        "math/rand") s
+5 599 M
+(        "testing") s
+5 588 M
+(\)) s
+5 566 M
+(// How many repetitions) s
+5 555 M
+(var ntest int = 10) s
+5 533 M
+(// How many elements per test) s
+5 522 M
+(var nele int = 50) s
+5 500 M
+(// Convert integer to byte array) s
+5 489 M
+(func i2b\(i int\) []byte {) s
+5 478 M
+(        b, _ := json.Marshal\(i\)) s
+5 467 M
+(        return b) s
+5 456 M
+(}) s
+5 434 M
+(// Convert byte array back to integer) s
+5 423 M
+(func b2i\(b []byte\) int {) s
+5 412 M
+(        var i int) s
+5 401 M
+(        json.Unmarshal\(b, &i\)) s
+5 390 M
+(        return i) s
+5 379 M
+(}) s
+5 357 M
+(func btest\(t *testing.T, bp *Buf\) {) s
+5 346 M
+(        inserted := 0) s
+5 335 M
+(        removed := 0) s
+5 324 M
+(        emptycount := 0) s
+5 313 M
+(        fmt.Printf\("Byte array data: "\)) s
+5 302 M
+(        for removed < nele {) s
+5 291 M
+(                if bp.Empty\(\) {) s
+5 280 M
+(                        emptycount++) s
+5 269 M
+(                }) s
+5 258 M
+(                // Choose action: insert or remove) s
+5 247 M
+(                insert := !\(inserted == nele\)) s
+5 236 M
+(                if inserted > removed && rand.Int31n\(2\) == 0 {) s
+5 225 M
+(                        insert = false) s
+5 214 M
+(                }) s
+5 203 M
+(                if insert {) s
+5 192 M
+(                        bp.Insert\(i2b\(inserted\)\)) s
+5 181 M
+(                        inserted++) s
+5 170 M
+(                } else {) s
+5 159 M
+(                        x, err := bp.Remove\(\) // Type = interface{}) s
+5 148 M
+(                        if err != nil {) s
+5 137 M
+(                                t.Logf\("Attempt to remove from empty buffer\\n"\)) s
+5 126 M
+(                                t.Fail\(\)) s
+5 115 M
+(                        }) s
+5 104 M
+(                        b := x.\([]byte\)  // Type = []byte) s
+5 93 M
+(                        v := b2i\(b\)) s
+5 82 M
+(                        if v != removed {) s
+5 71 M
+(                                t.Logf\("Removed %d.  Expected %d\\n", v, removed\)) s
+5 60 M
+(                                t.Fail\(\)) s
+5 49 M
+(                        }) s
+5 38 M
+(                        removed++) s
+5 27 M
+(                }) s
+5 16 M
+(        }) s
+5 5 M
+(        fmt.Printf\("Empty buffer %d/%d times\\n", emptycount, nele\)) s
+_R
+S
+%%Page: (2) 6
+%%BeginPageSetup
+_S
+38 24 translate
+/pagenum 2 def
+/fname (bufi/bufi_test.go) def
+/fdir (bufi/) def
+/ftail (bufi_test.go) def
+% User defined strings:
+/fmodstr (Wed Sep 05 14:55:15 2012) def
+/pagenumstr (2) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+5 687 M
+(}) s
+5 665 M
+(func itest\(t *testing.T, bp *Buf\) {) s
+5 654 M
+(        inserted := 0) s
+5 643 M
+(        removed := 0) s
+5 632 M
+(        emptycount := 0) s
+5 621 M
+(        fmt.Printf\("Integer data: "\)) s
+5 610 M
+(        for removed < nele {) s
+5 599 M
+(                if bp.Empty\(\) {) s
+5 588 M
+(                        emptycount++) s
+5 577 M
+(                }) s
+5 566 M
+(                // Choose action: insert or remove) s
+5 555 M
+(                insert := !\(inserted == nele\)) s
+5 544 M
+(                if inserted > removed && rand.Int31n\(2\) == 0 {) s
+5 533 M
+(                        insert = false) s
+5 522 M
+(                }) s
+5 511 M
+(                if insert {) s
+5 500 M
+(                        bp.Insert\(inserted\)) s
+5 489 M
+(                        inserted++) s
+5 478 M
+(                } else {) s
+5 467 M
+(                        x, err := bp.Remove\(\) // Type = interface{}) s
+5 456 M
+(                        if err != nil {) s
+5 445 M
+(                                t.Logf\("Attempt to remove from empty buffer\\n"\)) s
+5 434 M
+(                                t.Fail\(\)) s
+5 423 M
+(                        }) s
+5 412 M
+(                        v := x.\(int\)     // Type = int) s
+5 401 M
+(                        if v != removed {) s
+5 390 M
+(                                t.Logf\("Removed %d.  Expected %d\\n", v, removed\)) s
+5 379 M
+(                                t.Fail\(\)) s
+5 368 M
+(                        }) s
+5 357 M
+(                        removed++) s
+5 346 M
+(                }) s
+5 335 M
+(        }) s
+5 324 M
+(        fmt.Printf\("Empty buffer %d/%d times\\n", emptycount, nele\)) s
+5 313 M
+(}) s
+5 291 M
+(func mtest\(t *testing.T, bp *Buf\) {) s
+5 280 M
+(        inserted := 0) s
+5 269 M
+(        removed := 0) s
+5 258 M
+(        emptycount := 0) s
+5 247 M
+(        fmt.Printf\("Mixed data: "\)) s
+5 236 M
+(        for removed < nele {) s
+5 225 M
+(                if bp.Empty\(\) {) s
+5 214 M
+(                        emptycount++) s
+5 203 M
+(                }) s
+5 192 M
+(                // Choose action: insert or remove) s
+5 181 M
+(                insert := !\(inserted == nele\)) s
+5 170 M
+(                if inserted > removed && rand.Int31n\(2\) == 0 {) s
+5 159 M
+(                        insert = false) s
+5 148 M
+(                }) s
+5 137 M
+(                if insert {) s
+5 126 M
+(                        if rand.Int31n\(2\) == 0 {) s
+5 115 M
+(                                // Insert as integer) s
+5 104 M
+(                                bp.Insert\(inserted\)) s
+5 93 M
+(                        } else {) s
+5 82 M
+(                                // Insert as byte array) s
+5 71 M
+(                                bp.Insert\(i2b\(inserted\)\)) s
+5 60 M
+(                        }) s
+5 49 M
+(                        inserted++) s
+5 38 M
+(                } else {) s
+5 27 M
+(                        x, err := bp.Remove\(\) // Type = interface{}) s
+5 16 M
+(                        if err != nil {) s
+5 5 M
+(                                t.Logf\("Attempt to remove from empty buffer\\n"\)) s
+_R
+S
+%%Page: (3) 7
+%%BeginPageSetup
+_S
+38 24 translate
+/pagenum 3 def
+/fname (bufi/bufi_test.go) def
+/fdir (bufi/) def
+/ftail (bufi_test.go) def
+% User defined strings:
+/fmodstr (Wed Sep 05 14:55:15 2012) def
+/pagenumstr (3) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+5 687 M
+(                                t.Fail\(\)) s
+5 676 M
+(                        }) s
+5 665 M
+(                        var iv int) s
+5 654 M
+(                        switch v := x.\(type\) {) s
+5 643 M
+(                        case int:) s
+5 632 M
+(                                iv = v) s
+5 621 M
+(                        case []byte:) s
+5 610 M
+(                                iv = b2i\(v\)) s
+5 599 M
+(                        default:) s
+5 588 M
+(                                t.Logf\("Invalid data\\n"\)) s
+5 577 M
+(                                t.Fail\(\)) s
+5 566 M
+(                        }) s
+5 555 M
+(                        if iv != removed {) s
+5 544 M
+(                                t.Logf\("Removed %d.  Expected %d\\n", iv, removed\)) s
+5 533 M
+(                                t.Fail\(\)) s
+5 522 M
+(                        }) s
+5 511 M
+(                        removed++) s
+5 500 M
+(                }) s
+5 489 M
+(        }) s
+5 478 M
+(        fmt.Printf\("Empty buffer %d/%d times\\n", emptycount, nele\)) s
+5 467 M
+(}) s
+5 445 M
+(type TestFun func\(*testing.T, *Buf\)) s
+5 423 M
+(func testBuf\(t *testing.T, f TestFun\) {) s
+5 412 M
+(        // Run same test ntest times) s
+5 401 M
+(        for i := 0; i < ntest; i++ {) s
+5 390 M
+(                bp := NewBuf\(\)) s
+5 379 M
+(                f\(t, bp\)) s
+5 368 M
+(                if !bp.Empty\(\) {) s
+5 357 M
+(                        t.Logf\("Expected empty buffer"\)) s
+5 346 M
+(                        t.Fail\(\)) s
+5 335 M
+(                }) s
+5 324 M
+(        }) s
+5 313 M
+(}) s
+5 291 M
+(func TestB\(t *testing.T\) {) s
+5 280 M
+(        testBuf\(t, btest\)) s
+5 269 M
+(}) s
+5 247 M
+(func TestI\(t *testing.T\) {) s
+5 236 M
+(        testBuf\(t, itest\)) s
+5 225 M
+(}) s
+5 203 M
+(func TestM\(t *testing.T\) {) s
+5 192 M
+(        testBuf\(t, mtest\)) s
+5 181 M
+(}) s
+_R
+S
+%%Page: (1) 8
+%%BeginPageSetup
+_S
+38 24 translate
+/pagenum 1 def
+/fname (proxy/proxy.go) def
+/fdir (proxy/) def
+/ftail (proxy.go) def
+% User defined strings:
+/fmodstr (Wed Sep 05 17:20:43 2012) def
+/pagenumstr (1) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+5 687 M
+(// Implementation of a UDP proxy) s
+5 665 M
+(package main) s
+5 643 M
+(import \() s
+5 632 M
+(        "flag") s
+5 621 M
+(        "fmt") s
+5 610 M
+(        "log") s
+5 599 M
+(        "net") s
+5 588 M
+(        "os") s
+5 577 M
+(        "strings") s
+5 566 M
+(        "sync") s
+5 555 M
+(\)) s
+5 533 M
+(// Information maintained for each client/server connection) s
+5 522 M
+(type Connection struct {) s
+5 511 M
+(        ClientAddr *net.UDPAddr // Address of the client) s
+5 500 M
+(        ServerConn *net.UDPConn // UDP connection to server) s
+5 489 M
+(}) s
+5 467 M
+(// Generate a new connection by opening a UDP connection to the server) s
+5 456 M
+(func NewConnection\(srvAddr, cliAddr *net.UDPAddr\) *Connection {) s
+5 445 M
+(        conn := new\(Connection\)) s
+5 434 M
+(        conn.ClientAddr = cliAddr) s
+5 423 M
+(        srvudp, err := net.DialUDP\("udp", nil, srvAddr\)) s
+5 412 M
+(        if checkreport\(1, err\) {) s
+5 401 M
+(                return nil) s
+5 390 M
+(        }) s
+5 379 M
+(        conn.ServerConn = srvudp) s
+5 368 M
+(        return conn) s
+5 357 M
+(}) s
+5 335 M
+(// Global state) s
+5 324 M
+(// Connection used by clients as the proxy server) s
+5 313 M
+(var ProxyConn *net.UDPConn) s
+5 291 M
+(// Address of server) s
+5 280 M
+(var ServerAddr *net.UDPAddr) s
+5 258 M
+(// Mapping from client addresses \(as host:port\) to connection) s
+5 247 M
+(var ClientDict map[string]*Connection = make\(map[string]*Connection\)) s
+5 225 M
+(// Mutex used to serialize access to the dictionary) s
+5 214 M
+(var dmutex *sync.Mutex = new\(sync.Mutex\)) s
+5 192 M
+(func setup\(hostport string, port int\) bool {) s
+5 181 M
+(        // Set up Proxy) s
+5 170 M
+(        saddr, err := net.ResolveUDPAddr\("udp", fmt.Sprintf\(":%d", port\)\)) s
+5 159 M
+(        if checkreport\(1, err\) {) s
+5 148 M
+(                return false) s
+5 137 M
+(        }) s
+5 126 M
+(        pudp, err := net.ListenUDP\("udp", saddr\)) s
+5 115 M
+(        if checkreport\(1, err\) {) s
+5 104 M
+(                return false) s
+5 93 M
+(        }) s
+5 82 M
+(        ProxyConn = pudp) s
+5 71 M
+(        Vlogf\(2, "Proxy serving on port %d\\n", port\)) s
+5 49 M
+(        // Get server address) s
+5 38 M
+(        srvaddr, err := net.ResolveUDPAddr\("udp", hostport\)) s
+5 27 M
+(        if checkreport\(1, err\) {) s
+5 16 M
+(                return false) s
+5 5 M
+(        }) s
+_R
+S
+%%Page: (2) 9
+%%BeginPageSetup
+_S
+38 24 translate
+/pagenum 2 def
+/fname (proxy/proxy.go) def
+/fdir (proxy/) def
+/ftail (proxy.go) def
+% User defined strings:
+/fmodstr (Wed Sep 05 17:20:43 2012) def
+/pagenumstr (2) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+5 687 M
+(        ServerAddr = srvaddr) s
+5 676 M
+(        Vlogf\(2, "Connected to server at %s\\n", hostport\)) s
+5 665 M
+(        return true) s
+5 654 M
+(}) s
+5 632 M
+(func dlock\(\) {) s
+5 621 M
+(        dmutex.Lock\(\)) s
+5 610 M
+(}) s
+5 588 M
+(func dunlock\(\) {) s
+5 577 M
+(        dmutex.Unlock\(\)) s
+5 566 M
+(}) s
+5 544 M
+(// Go routine which manages connection from server to single client) s
+5 533 M
+(func RunConnection\(conn *Connection\) {) s
+5 522 M
+(        var buffer [1500]byte) s
+5 511 M
+(        for {) s
+5 500 M
+(                // Read from server) s
+5 489 M
+(                n, err := conn.ServerConn.Read\(buffer[0:]\)) s
+5 478 M
+(                if checkreport\(1, err\) {) s
+5 467 M
+(                        continue) s
+5 456 M
+(                }) s
+5 445 M
+(                // Relay it to client) s
+5 434 M
+(                _, err = ProxyConn.WriteToUDP\(buffer[0:n], conn.ClientAddr\)) s
+5 423 M
+(                if checkreport\(1, err\) {) s
+5 412 M
+(                        continue) s
+5 401 M
+(                }) s
+5 390 M
+(                Vlogf\(3, "Relayed '%s' from server to %s.\\n",) s
+5 379 M
+(                        string\(buffer[0:n]\), conn.ClientAddr.String\(\)\)) s
+5 368 M
+(        }) s
+5 357 M
+(}) s
+5 335 M
+(// Routine to handle inputs to Proxy port) s
+5 324 M
+(func RunProxy\(\) {) s
+5 313 M
+(        var buffer [1500]byte) s
+5 302 M
+(        for {) s
+5 291 M
+(                n, cliaddr, err := ProxyConn.ReadFromUDP\(buffer[0:]\)) s
+5 280 M
+(                if checkreport\(1, err\) {) s
+5 269 M
+(                        continue) s
+5 258 M
+(                }) s
+5 247 M
+(                Vlogf\(3, "Read '%s' from client %s\\n",) s
+5 236 M
+(                        string\(buffer[0:n]\), cliaddr.String\(\)\)) s
+5 225 M
+(                saddr := cliaddr.String\(\)) s
+5 214 M
+(                dlock\(\)) s
+5 203 M
+(                conn, found := ClientDict[saddr]) s
+5 192 M
+(                if !found {) s
+5 181 M
+(                        conn = NewConnection\(ServerAddr, cliaddr\)) s
+5 170 M
+(                        if conn == nil {) s
+5 159 M
+(                                dunlock\(\)) s
+5 148 M
+(                                continue) s
+5 137 M
+(                        }) s
+5 126 M
+(                        ClientDict[saddr] = conn) s
+5 115 M
+(                        dunlock\(\)) s
+5 104 M
+(                        Vlogf\(2, "Created new connection for client %s\\n", saddr\)) s
+5 93 M
+(                        // Fire up routine to manage new connection) s
+5 82 M
+(                        go RunConnection\(conn\)) s
+5 71 M
+(                } else {) s
+5 60 M
+(                        Vlogf\(5, "Found connection for client %s\\n", saddr\)) s
+5 49 M
+(                        dunlock\(\)) s
+5 38 M
+(                }) s
+5 27 M
+(                // Relay to server) s
+5 16 M
+(                _, err = conn.ServerConn.Write\(buffer[0:n]\)) s
+5 5 M
+(                if checkreport\(1, err\) {) s
+_R
+S
+%%Page: (3) 10
+%%BeginPageSetup
+_S
+38 24 translate
+/pagenum 3 def
+/fname (proxy/proxy.go) def
+/fdir (proxy/) def
+/ftail (proxy.go) def
+% User defined strings:
+/fmodstr (Wed Sep 05 17:20:43 2012) def
+/pagenumstr (3) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+5 687 M
+(                        continue) s
+5 676 M
+(                }) s
+5 665 M
+(        }) s
+5 654 M
+(}) s
+5 632 M
+(var verbosity int = 6) s
+5 610 M
+(// Log result if verbosity level high enough) s
+5 599 M
+(func Vlogf\(level int, format string, v ...interface{}\) {) s
+5 588 M
+(        if level <= verbosity {) s
+5 577 M
+(                log.Printf\(format, v...\)) s
+5 566 M
+(        }) s
+5 555 M
+(}) s
+5 533 M
+(// Handle errors) s
+5 522 M
+(func checkreport\(level int, err error\) bool {) s
+5 511 M
+(        if err == nil {) s
+5 500 M
+(                return false) s
+5 489 M
+(        }) s
+5 478 M
+(        Vlogf\(level, "Error: %s", err.Error\(\)\)) s
+5 467 M
+(        return true) s
+5 456 M
+(}) s
+5 434 M
+(func main\(\) {) s
+5 423 M
+(        var ihelp *bool = flag.Bool\("h", false, "Show help information"\)) s
+5 412 M
+(        var ipport *int = flag.Int\("p", 6667, "Proxy port"\)) s
+5 401 M
+(        var isport *int = flag.Int\("P", 6666, "Server port"\)) s
+5 390 M
+(        var ishost *string = flag.String\("H", "localhost", "Server address"\)) s
+5 379 M
+(        var iverb *int = flag.Int\("v", 1, "Verbosity \(0-6\)"\)) s
+5 368 M
+(        //      var idrop *float64 = flag.Float64\("d", 0.0, "Packet drop rate"\)) s
+5 357 M
+(        flag.Parse\(\)) s
+5 346 M
+(        verbosity = *iverb) s
+5 335 M
+(        if *ihelp {) s
+5 324 M
+(                flag.Usage\(\)) s
+5 313 M
+(                os.Exit\(0\)) s
+5 302 M
+(        }) s
+5 291 M
+(        if flag.NArg\(\) > 0 {) s
+5 280 M
+(                ok := true) s
+5 269 M
+(                fields := strings.Split\(flag.Arg\(0\), ":"\)) s
+5 258 M
+(                ok = ok && len\(fields\) == 2) s
+5 247 M
+(                if ok {) s
+5 236 M
+(                        *ishost = fields[0]) s
+5 225 M
+(                        n, err := fmt.Sscanf\(fields[1], "%d", isport\)) s
+5 214 M
+(                        ok = ok && n == 1 && err == nil) s
+5 203 M
+(                }) s
+5 192 M
+(                if !ok {) s
+5 181 M
+(                        flag.Usage\(\)) s
+5 170 M
+(                        os.Exit\(0\)) s
+5 159 M
+(                }) s
+5 148 M
+(        }) s
+5 137 M
+(        hostport := fmt.Sprintf\("%s:%d", *ishost, *isport\)) s
+5 126 M
+(        Vlogf\(3, "Proxy port = %d, Server address = %s\\n",) s
+5 115 M
+(                *ipport, hostport\)) s
+5 104 M
+(        if setup\(hostport, *ipport\) {) s
+5 93 M
+(                RunProxy\(\)) s
+5 82 M
+(        }) s
+5 71 M
+(        os.Exit\(0\)) s
+5 60 M
+(}) s
+_R
+S
+%%Trailer
+%%Pages: 10
+%%DocumentNeededResources: font Courier-Bold Courier 
+%%EOF
